@@ -62,3 +62,19 @@ func (r *InfiniteReader) Read(b []byte) (n int, err error) {
 	b[0] = '.'
 	return 1, nil
 }
+
+////////////////////////////////////////////////////////////////
+
+// EmptyReader implements an io.Reader that will always return 0, nil.
+type EmptyReader struct {
+}
+
+// NewEmptyReader returns a new EmptyReader.
+func NewEmptyReader() *EmptyReader {
+	return &EmptyReader{}
+}
+
+// Read implements the io.Reader interface.
+func (r *EmptyReader) Read(b []byte) (n int, err error) {
+	return 0, nil
+}
