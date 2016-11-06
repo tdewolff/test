@@ -83,6 +83,6 @@ func Minify(t *testing.T, input string, err error, output, expected string, msgs
 		t.Errorf("%s: %s   given: %s\n   error: %v\n", trace(), message("", msgs...), printable(input), err)
 	}
 	if output != expected {
-		t.Errorf("%s: %s   given: %s\nminified: %s\nexpected: %s\n", trace(), message("", msgs...), printable(input), printable(output), printable(expected))
+		t.Errorf("%s: %s   given: %s\n  output: %s\nexpected: %s\n", trace(), message("", msgs...), printable(input), printable(output), printable(expected))
 	}
 }
