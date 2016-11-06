@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"math"
 	"runtime"
 	"strings"
 	"testing"
@@ -56,6 +57,12 @@ func That(t *testing.T, condition bool, msgs ...interface{}) {
 func Error(t *testing.T, err, expected error, msgs ...interface{}) {
 	if err != expected {
 		t.Errorf("%s: %s   error: %v\nexpected: %v\n", trace(), message("", msgs...), err, expected)
+	}
+}
+
+func Float(t *testing.T, output, expected float64, msgs ...interface{}) {
+	if math.Abs(output-expected) > 1e-10 {
+		t.Errorf("%s: %s  output: %f\nexpected: %f\n", trace(), message("", msgs...), output, expected)
 	}
 }
 
