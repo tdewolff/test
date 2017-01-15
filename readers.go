@@ -45,13 +45,11 @@ func (r *ErrorReader) Read(b []byte) (n int, err error) {
 ////////////////////////////////////////////////////////////////
 
 // InfiniteReader implements an io.Reader that will always read-in one character.
-type InfiniteReader struct {
-	n int
-}
+type InfiniteReader struct{}
 
 // NewInfiniteReader returns a new InfiniteReader.
-func NewInfiniteReader(n int) *InfiniteReader {
-	return &InfiniteReader{n}
+func NewInfiniteReader() *InfiniteReader {
+	return &InfiniteReader{}
 }
 
 // Read implements the io.Reader interface.
@@ -76,5 +74,5 @@ func NewEmptyReader() *EmptyReader {
 
 // Read implements the io.Reader interface.
 func (r *EmptyReader) Read(b []byte) (n int, err error) {
-	return 0, nil
+	return 0, io.EOF
 }
