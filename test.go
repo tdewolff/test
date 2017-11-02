@@ -59,6 +59,12 @@ func Error(t *testing.T, err, expected error, msgs ...interface{}) {
 	}
 }
 
+func Int(t *testing.T, output, expected int, msgs ...interface{}) {
+	if output != expected {
+		t.Errorf("%s%s  output: %d\nexpected: %d\n", trace(), message(msgs...), output, expected)
+	}
+}
+
 func Float(t *testing.T, output, expected float64, msgs ...interface{}) {
 	if math.Abs(output-expected) > 1e-10 {
 		t.Errorf("%s%s  output: %f\nexpected: %f\n", trace(), message(msgs...), output, expected)
