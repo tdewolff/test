@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"math"
+	"reflect"
 	"runtime"
 	"strings"
 	"testing"
@@ -45,11 +46,31 @@ func printable(s string) string {
 	return s
 }
 
+const (
+	Red   = "31"
+	Green = "32"
+)
+
+func color(color string, s interface{}) string {
+	return fmt.Sprintf("\033[00;%sm%v\033[00m", color, s)
+}
+
 /////////////////////////////////////////////////////////////////
 
 func That(t *testing.T, condition bool, msgs ...interface{}) {
 	if !condition {
 		t.Errorf("%s%s", trace(), message(msgs...))
+	}
+}
+
+func V(t *testing.T, context string, got, wanted interface{}) {
+	gotType := reflect.TypeOf(got)
+	wantedType := reflect.TypeOf(wanted)
+	if gotType != wantedType {
+		t.Errorf("%s: %s: type %v != %v", trace(), context, color(Red, gotType), color(Green, wantedType))
+	}
+	if got != wanted {
+		t.Errorf("%s: %s: %v != %v", trace(), context, color(Red, got), color(Green, wanted))
 	}
 }
 
