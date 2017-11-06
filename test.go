@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"math"
 	"reflect"
 	"runtime"
 	"strings"
@@ -34,15 +33,18 @@ func trace() string {
 
 func message(msgs ...interface{}) string {
 	if len(msgs) == 0 {
-		return "\n"
+		return ""
 	}
-	return ": " + fmt.Sprintln(msgs...)
+	s := fmt.Sprintln(msgs...)
+	s = s[:len(s)-1] // remove newline
+	return ": " + s
 }
 
 func printable(s string) string {
 	s = strings.Replace(s, "\n", `\n`, -1)
 	s = strings.Replace(s, "\r", `\r`, -1)
 	s = strings.Replace(s, "\t", `\t`, -1)
+	s = strings.Replace(s, " ", "\u00B7", -1)
 	return s
 }
 
@@ -57,50 +59,40 @@ func color(color string, s interface{}) string {
 
 /////////////////////////////////////////////////////////////////
 
+func Fail(t *testing.T, msgs ...interface{}) {
+	t.Errorf("%s%s", trace(), message(msgs...))
+}
+
 func That(t *testing.T, condition bool, msgs ...interface{}) {
 	if !condition {
 		t.Errorf("%s%s", trace(), message(msgs...))
 	}
 }
 
-func V(t *testing.T, context string, got, wanted interface{}) {
+func T(t *testing.T, got, wanted interface{}, msgs ...interface{}) {
 	gotType := reflect.TypeOf(got)
 	wantedType := reflect.TypeOf(wanted)
 	if gotType != wantedType {
-		t.Errorf("%s: %s: type %v != %v", trace(), context, color(Red, gotType), color(Green, wantedType))
+		t.Errorf("%s%s: type %v != %v", trace(), message(msgs...), color(Red, gotType), color(Green, wantedType))
 	}
 	if got != wanted {
-		t.Errorf("%s: %s: %v != %v", trace(), context, color(Red, got), color(Green, wanted))
+		t.Errorf("%s%s: %v != %v", trace(), message(msgs...), color(Red, got), color(Green, wanted))
 	}
 }
 
-func Error(t *testing.T, err, expected error, msgs ...interface{}) {
-	if err != expected {
-		t.Errorf("%s%s   error: %v\nexpected: %v\n", trace(), message(msgs...), err, expected)
+func Bytes(t *testing.T, got, wanted []byte, msgs ...interface{}) {
+	if !bytes.Equal(got, wanted) {
+		gotString := printable(string(got))
+		wantedString := printable(string(wanted))
+		t.Errorf("%s%s\n%s\n%s", trace(), message(msgs...), color(Red, gotString), color(Green, wantedString))
 	}
 }
 
-func Int(t *testing.T, output, expected int, msgs ...interface{}) {
-	if output != expected {
-		t.Errorf("%s%s  output: %d\nexpected: %d\n", trace(), message(msgs...), output, expected)
-	}
-}
-
-func Float(t *testing.T, output, expected float64, msgs ...interface{}) {
-	if math.Abs(output-expected) > 1e-10 {
-		t.Errorf("%s%s  output: %f\nexpected: %f\n", trace(), message(msgs...), output, expected)
-	}
-}
-
-func String(t *testing.T, output, expected string, msgs ...interface{}) {
-	if output != expected {
-		t.Errorf("%s%s  output: %s\nexpected: %s\n", trace(), message(msgs...), printable(output), printable(expected))
-	}
-}
-
-func Bytes(t *testing.T, output, expected []byte, msgs ...interface{}) {
-	if !bytes.Equal(output, expected) {
-		t.Errorf("%s%s  output: %s\nexpected: %s\n", trace(), message(msgs...), printable(string(output)), printable(string(expected)))
+func String(t *testing.T, got, wanted string, msgs ...interface{}) {
+	if got != wanted {
+		gotString := printable(got)
+		wantedString := printable(wanted)
+		t.Errorf("%s%s\n%s\n%s", trace(), message(msgs...), color(Red, gotString), color(Green, wantedString))
 	}
 }
 
