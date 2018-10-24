@@ -44,7 +44,6 @@ func printable(s string) string {
 	s = strings.Replace(s, "\n", `\n`, -1)
 	s = strings.Replace(s, "\r", `\r`, -1)
 	s = strings.Replace(s, "\t", `\t`, -1)
-	s = strings.Replace(s, " ", "\u00B7", -1)
 	return s
 }
 
