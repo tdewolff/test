@@ -28,7 +28,7 @@ func fileline(i int) string {
 func trace() string {
 	trace2 := fileline(2)
 	trace3 := fileline(3)
-	return "\r\t" + strings.Repeat(" ", len(fmt.Sprintf("%s:", trace2))) + "\r\t" + trace3
+	return "\r    " + strings.Repeat(" ", len(fmt.Sprintf("%s:", trace2))) + "\r    " + trace3
 }
 
 func message(msgs ...interface{}) string {
@@ -70,7 +70,7 @@ func Error(t *testing.T, err error, msgs ...interface{}) {
 
 func That(t *testing.T, condition bool, msgs ...interface{}) {
 	if !condition {
-		t.Errorf("%s%s", trace(), message(msgs...))
+		t.Errorf("%s%s: false", trace(), message(msgs...))
 	}
 }
 
