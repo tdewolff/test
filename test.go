@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"math"
 	"reflect"
 	"runtime"
 	"strings"
@@ -44,6 +45,7 @@ func printable(s string) string {
 	s = strings.Replace(s, "\n", `\n`, -1)
 	s = strings.Replace(s, "\r", `\r`, -1)
 	s = strings.Replace(s, "\t", `\t`, -1)
+	s = strings.Replace(s, "\x00", `\0`, -1)
 	return s
 }
 
@@ -98,6 +100,12 @@ func String(t *testing.T, got, wanted string, msgs ...interface{}) {
 		gotString := printable(got)
 		wantedString := printable(wanted)
 		t.Errorf("%s%s:\n%s\n%s", trace(), message(msgs...), color(Red, gotString), color(Green, wantedString))
+	}
+}
+
+func Float(t *testing.T, got, wanted float64, msgs ...interface{}) {
+	if math.Abs(got-wanted) > 1e-6 {
+		t.Errorf("%s%s: %v != %v", trace(), message(msgs...), color(Red, got), color(Green, wanted))
 	}
 }
 
