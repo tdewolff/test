@@ -81,14 +81,16 @@ func T(t *testing.T, got, wanted interface{}, msgs ...interface{}) {
 	wantedType := reflect.TypeOf(wanted)
 	if gotType != wantedType {
 		t.Errorf("%s%s: type %v != %v", trace(), message(msgs...), color(Red, gotType), color(Green, wantedType))
+		return
+	}
+	if got == wanted {
+		return
 	}
 
-	if equals, ok := wantedType.MethodByName("Equals"); ok && equals.Type.NumIn() == 2 && equals.Type.NumOut() == 1 && equals.Type.In(0) == wantedType && equals.Type.In(1) == gotType && equals.Type.Out(0).Kind() == reflect.Bool {
-		if equals.Func.Call([]reflect.Value{reflect.ValueOf(wanted), reflect.ValueOf(got)})[0].Bool() {
+	if wantedType != nil {
+		if equals, ok := wantedType.MethodByName("Equals"); ok && equals.Type.NumIn() == 2 && equals.Type.NumOut() == 1 && equals.Type.In(0) == wantedType && equals.Type.In(1) == gotType && equals.Type.Out(0).Kind() == reflect.Bool && equals.Func.Call([]reflect.Value{reflect.ValueOf(wanted), reflect.ValueOf(got)})[0].Bool() {
 			return
 		}
-	} else if got == wanted {
-		return
 	}
 	t.Errorf("%s%s: %v != %v", trace(), message(msgs...), color(Red, got), color(Green, wanted))
 }
