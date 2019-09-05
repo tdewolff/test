@@ -61,18 +61,18 @@ func color(color string, s interface{}) string {
 /////////////////////////////////////////////////////////////////
 
 func Fail(t *testing.T, msgs ...interface{}) {
-	t.Errorf("%s%s", trace(), message(msgs...))
+	t.Fatalf("%s%s", trace(), message(msgs...))
 }
 
 func Error(t *testing.T, err error, msgs ...interface{}) {
 	if err != nil {
-		t.Errorf("%s%s: %s", trace(), message(msgs...), color(Red, err.Error()))
+		t.Fatalf("%s%s: %s", trace(), message(msgs...), color(Red, err.Error()))
 	}
 }
 
 func That(t *testing.T, condition bool, msgs ...interface{}) {
 	if !condition {
-		t.Errorf("%s%s: false", trace(), message(msgs...))
+		t.Fatalf("%s%s: false", trace(), message(msgs...))
 	}
 }
 
@@ -80,7 +80,7 @@ func T(t *testing.T, got, wanted interface{}, msgs ...interface{}) {
 	gotType := reflect.TypeOf(got)
 	wantedType := reflect.TypeOf(wanted)
 	if gotType != wantedType {
-		t.Errorf("%s%s: type %v != %v", trace(), message(msgs...), color(Red, gotType), color(Green, wantedType))
+		t.Fatalf("%s%s: type %v != %v", trace(), message(msgs...), color(Red, gotType), color(Green, wantedType))
 		return
 	}
 	if got == wanted {
@@ -92,14 +92,14 @@ func T(t *testing.T, got, wanted interface{}, msgs ...interface{}) {
 			return
 		}
 	}
-	t.Errorf("%s%s: %v != %v", trace(), message(msgs...), color(Red, got), color(Green, wanted))
+	t.Fatalf("%s%s: %v != %v", trace(), message(msgs...), color(Red, got), color(Green, wanted))
 }
 
 func Bytes(t *testing.T, got, wanted []byte, msgs ...interface{}) {
 	if !bytes.Equal(got, wanted) {
 		gotString := printable(string(got))
 		wantedString := printable(string(wanted))
-		t.Errorf("%s%s:\n%s\n%s", trace(), message(msgs...), color(Red, gotString), color(Green, wantedString))
+		t.Fatalf("%s%s:\n%s\n%s", trace(), message(msgs...), color(Red, gotString), color(Green, wantedString))
 	}
 }
 
@@ -107,26 +107,26 @@ func String(t *testing.T, got, wanted string, msgs ...interface{}) {
 	if got != wanted {
 		gotString := printable(got)
 		wantedString := printable(wanted)
-		t.Errorf("%s%s:\n%s\n%s", trace(), message(msgs...), color(Red, gotString), color(Green, wantedString))
+		t.Fatalf("%s%s:\n%s\n%s", trace(), message(msgs...), color(Red, gotString), color(Green, wantedString))
 	}
 }
 
 func Float(t *testing.T, got, wanted float64, msgs ...interface{}) {
 	if math.Abs(got-wanted) > 1e-6 {
-		t.Errorf("%s%s: %v != %v", trace(), message(msgs...), color(Red, got), color(Green, wanted))
+		t.Fatalf("%s%s: %v != %v", trace(), message(msgs...), color(Red, got), color(Green, wanted))
 	}
 }
 
 func Minify(t *testing.T, input string, err error, got, wanted string, msgs ...interface{}) {
 	inputString := printable(input)
 	if err != nil {
-		t.Errorf("%s%s:\n%s\n%s", trace(), message(msgs...), inputString, color(Red, err.Error()))
+		t.Fatalf("%s%s:\n%s\n%s", trace(), message(msgs...), inputString, color(Red, err.Error()))
 		return
 	}
 
 	if got != wanted {
 		gotString := printable(got)
 		wantedString := printable(wanted)
-		t.Errorf("%s%s:\n%s\n%s\n%s", trace(), message(msgs...), inputString, color(Red, gotString), color(Green, wantedString))
+		t.Fatalf("%s%s:\n%s\n%s\n%s", trace(), message(msgs...), inputString, color(Red, gotString), color(Green, wantedString))
 	}
 }
