@@ -112,7 +112,7 @@ func String(t *testing.T, got, wanted string, msgs ...interface{}) {
 }
 
 func Float(t *testing.T, got, wanted float64, msgs ...interface{}) {
-	if math.Abs(got-wanted) > 1e-6 {
+	if math.IsNaN(wanted) != math.IsNaN(got) || !math.IsNaN(wanted) && math.Abs(got-wanted) > 1e-6 {
 		t.Fatalf("%s%s: %v != %v", trace(), message(msgs...), color(Red, got), color(Green, wanted))
 	}
 }
