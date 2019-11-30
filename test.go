@@ -83,7 +83,7 @@ func T(t *testing.T, got, wanted interface{}, msgs ...interface{}) {
 		t.Fatalf("%s%s: type %v != %v", trace(), message(msgs...), color(Red, gotType), color(Green, wantedType))
 		return
 	}
-	if got == wanted {
+	if reflect.DeepEqual(got, wanted) {
 		return
 	}
 
