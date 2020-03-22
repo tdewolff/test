@@ -9,6 +9,7 @@ import (
 	"runtime"
 	"strings"
 	"testing"
+	"unicode"
 )
 
 // ErrPlain is the default error that is returned for functions in this package.
@@ -46,7 +47,16 @@ func printable(s string) string {
 	s = strings.Replace(s, "\r", `\r`, -1)
 	s = strings.Replace(s, "\t", `\t`, -1)
 	s = strings.Replace(s, "\x00", `\0`, -1)
-	return s
+
+	s2 := ""
+	for _, r := range s {
+		if !unicode.IsPrint(r) {
+			s2 += fmt.Sprintf("\\x%X", r)
+		} else {
+			s2 += string(r)
+		}
+	}
+	return s2
 }
 
 const (
@@ -61,22 +71,26 @@ func color(color string, s interface{}) string {
 /////////////////////////////////////////////////////////////////
 
 func Fail(t *testing.T, msgs ...interface{}) {
+	t.Helper()
 	t.Fatalf("%s%s", trace(), message(msgs...))
 }
 
 func Error(t *testing.T, err error, msgs ...interface{}) {
+	t.Helper()
 	if err != nil {
 		t.Fatalf("%s%s: %s", trace(), message(msgs...), color(Red, err.Error()))
 	}
 }
 
 func That(t *testing.T, condition bool, msgs ...interface{}) {
+	t.Helper()
 	if !condition {
 		t.Fatalf("%s%s: false", trace(), message(msgs...))
 	}
 }
 
 func T(t *testing.T, got, wanted interface{}, msgs ...interface{}) {
+	t.Helper()
 	gotType := reflect.TypeOf(got)
 	wantedType := reflect.TypeOf(wanted)
 	if gotType != wantedType {
@@ -96,6 +110,7 @@ func T(t *testing.T, got, wanted interface{}, msgs ...interface{}) {
 }
 
 func Bytes(t *testing.T, got, wanted []byte, msgs ...interface{}) {
+	t.Helper()
 	if !bytes.Equal(got, wanted) {
 		gotString := printable(string(got))
 		wantedString := printable(string(wanted))
@@ -104,6 +119,7 @@ func Bytes(t *testing.T, got, wanted []byte, msgs ...interface{}) {
 }
 
 func String(t *testing.T, got, wanted string, msgs ...interface{}) {
+	t.Helper()
 	if got != wanted {
 		gotString := printable(got)
 		wantedString := printable(wanted)
@@ -112,12 +128,14 @@ func String(t *testing.T, got, wanted string, msgs ...interface{}) {
 }
 
 func Float(t *testing.T, got, wanted float64, msgs ...interface{}) {
+	t.Helper()
 	if math.IsNaN(wanted) != math.IsNaN(got) || !math.IsNaN(wanted) && math.Abs(got-wanted) > 1e-6 {
 		t.Fatalf("%s%s: %v != %v", trace(), message(msgs...), color(Red, got), color(Green, wanted))
 	}
 }
 
 func Minify(t *testing.T, input string, err error, got, wanted string, msgs ...interface{}) {
+	t.Helper()
 	inputString := printable(input)
 	if err != nil {
 		t.Fatalf("%s%s:\n%s\n%s", trace(), message(msgs...), inputString, color(Red, err.Error()))
