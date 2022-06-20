@@ -134,6 +134,13 @@ func Float(t *testing.T, got, wanted float64, msgs ...interface{}) {
 	}
 }
 
+func FloatDiff(t *testing.T, got, wanted, diff float64, msgs ...interface{}) {
+	t.Helper()
+	if math.IsNaN(wanted) != math.IsNaN(got) || !math.IsNaN(wanted) && math.Abs(got-wanted) > diff {
+		t.Fatalf("%s%s: %v != %v", trace(), message(msgs...), color(Red, got), color(Green, fmt.Sprintf("%v ± %v", wanted, diff)))
+	}
+}
+
 func Minify(t *testing.T, input string, err error, got, wanted string, msgs ...interface{}) {
 	t.Helper()
 	inputString := printable(input)
