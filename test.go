@@ -54,9 +54,9 @@ func printable(s string) string {
 	s2 := ""
 	for _, r := range s {
 		if !unicode.IsPrint(r) {
-			if r < 0xFF {
+			if r <= 0xFF {
 				s2 += fmt.Sprintf("\\x%02X", r)
-			} else if r < 0xFFFF {
+			} else if r <= 0xFFFF {
 				s2 += fmt.Sprintf("\\u%04X", r)
 			} else {
 				s2 += fmt.Sprintf("\\U%08X", r)
