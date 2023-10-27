@@ -138,7 +138,7 @@ func String(t *testing.T, got, wanted string, msgs ...interface{}) {
 
 func Float(t *testing.T, got, wanted float64, msgs ...interface{}) {
 	t.Helper()
-	if math.IsNaN(wanted) != math.IsNaN(got) || !math.IsNaN(wanted) && math.Abs(got-wanted) > Epsilon {
+	if math.IsNaN(wanted) != math.IsNaN(got) || !math.IsNaN(wanted) && Epsilon < math.Abs((got-wanted)/wanted) {
 		t.Fatalf("%s%s: %v != %v", trace(), message(msgs...), color(Red, got), color(Green, wanted))
 	}
 }
@@ -148,7 +148,7 @@ func Floats(t *testing.T, got, wanted []float64, msgs ...interface{}) {
 	equal := len(got) == len(wanted)
 	if equal {
 		for i := range got {
-			if math.IsNaN(wanted[i]) != math.IsNaN(got[i]) || !math.IsNaN(wanted[i]) && math.Abs(got[i]-wanted[i]) > Epsilon {
+			if math.IsNaN(wanted[i]) != math.IsNaN(got[i]) || !math.IsNaN(wanted[i]) && Epsilon < math.Abs((got[i]-wanted[i])/wanted[i]) {
 				equal = false
 				break
 			}
@@ -161,7 +161,7 @@ func Floats(t *testing.T, got, wanted []float64, msgs ...interface{}) {
 
 func FloatDiff(t *testing.T, got, wanted, diff float64, msgs ...interface{}) {
 	t.Helper()
-	if math.IsNaN(wanted) != math.IsNaN(got) || !math.IsNaN(wanted) && math.Abs(got-wanted) > diff {
+	if math.IsNaN(wanted) != math.IsNaN(got) || !math.IsNaN(wanted) && diff < math.Abs(got-wanted) {
 		t.Fatalf("%s%s: %v != %v", trace(), message(msgs...), color(Red, got), color(Green, fmt.Sprintf("%v ± %v", wanted, diff)))
 	}
 }
