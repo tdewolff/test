@@ -77,6 +77,17 @@ func color(color string, s interface{}) string {
 	return fmt.Sprintf("\033[00;%sm%v\033[00m", color, s)
 }
 
+func floatEqual(a, b, epsilon float64) bool {
+	// use mix of relative and absolute difference for large and small numbers respectively
+	// see: https://stackoverflow.com/a/32334103
+	if a == b {
+		return true
+	}
+	diff := math.Abs(a - b)
+	norm := math.Min(math.Abs(a)+math.Abs(b), math.MaxFloat64)
+	return diff < epsilon*math.Max(1.0, norm)
+}
+
 /////////////////////////////////////////////////////////////////
 
 func Fail(t *testing.T, msgs ...interface{}) {
@@ -138,7 +149,7 @@ func String(t *testing.T, got, wanted string, msgs ...interface{}) {
 
 func Float(t *testing.T, got, wanted float64, msgs ...interface{}) {
 	t.Helper()
-	if math.IsNaN(wanted) != math.IsNaN(got) || !math.IsNaN(wanted) && Epsilon < math.Abs((got-wanted)/wanted) {
+	if math.IsNaN(wanted) != math.IsNaN(got) || !math.IsNaN(wanted) && !floatEqual(got, wanted, Epsilon) {
 		t.Fatalf("%s%s: %v != %v", trace(), message(msgs...), color(Red, got), color(Green, wanted))
 	}
 }
@@ -148,7 +159,7 @@ func Floats(t *testing.T, got, wanted []float64, msgs ...interface{}) {
 	equal := len(got) == len(wanted)
 	if equal {
 		for i := range got {
-			if math.IsNaN(wanted[i]) != math.IsNaN(got[i]) || !math.IsNaN(wanted[i]) && Epsilon < math.Abs((got[i]-wanted[i])/wanted[i]) {
+			if math.IsNaN(wanted[i]) != math.IsNaN(got[i]) || !math.IsNaN(wanted[i]) && !floatEqual(got[i], wanted[i], Epsilon) {
 				equal = false
 				break
 			}
@@ -159,10 +170,10 @@ func Floats(t *testing.T, got, wanted []float64, msgs ...interface{}) {
 	}
 }
 
-func FloatDiff(t *testing.T, got, wanted, diff float64, msgs ...interface{}) {
+func FloatDiff(t *testing.T, got, wanted, epsilon float64, msgs ...interface{}) {
 	t.Helper()
-	if math.IsNaN(wanted) != math.IsNaN(got) || !math.IsNaN(wanted) && diff < math.Abs(got-wanted) {
-		t.Fatalf("%s%s: %v != %v", trace(), message(msgs...), color(Red, got), color(Green, fmt.Sprintf("%v ± %v", wanted, diff)))
+	if math.IsNaN(wanted) != math.IsNaN(got) || !math.IsNaN(wanted) && !floatEqual(got, wanted, epsilon) {
+		t.Fatalf("%s%s: %v != %v", trace(), message(msgs...), color(Red, got), color(Green, fmt.Sprintf("%v ± %v", wanted, epsilon)))
 	}
 }
 
