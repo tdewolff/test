@@ -36,7 +36,7 @@ func trace() string {
 	return "\r    " + strings.Repeat(" ", len(fmt.Sprintf("%s:", trace2))) + "\r    " + trace3
 }
 
-func message(msgs ...interface{}) string {
+func message(msgs ...any) string {
 	if len(msgs) == 0 {
 		return ""
 	}
@@ -73,7 +73,7 @@ const (
 	Green = "32"
 )
 
-func color(color string, s interface{}) string {
+func color(color string, s any) string {
 	return fmt.Sprintf("\033[00;%sm%v\033[00m", color, s)
 }
 
@@ -90,26 +90,33 @@ func floatEqual(a, b, epsilon float64) bool {
 
 /////////////////////////////////////////////////////////////////
 
-func Fail(t *testing.T, msgs ...interface{}) {
+func Fail(t *testing.T, msgs ...any) {
 	t.Helper()
 	t.Fatalf("%s%s", trace(), message(msgs...))
 }
 
-func Error(t *testing.T, err error, msgs ...interface{}) {
+func Error(t *testing.T, err error, msgs ...any) {
 	t.Helper()
 	if err != nil {
 		t.Fatalf("%s%s: %s", trace(), message(msgs...), color(Red, err.Error()))
 	}
 }
 
-func That(t *testing.T, condition bool, msgs ...interface{}) {
+func That(t *testing.T, condition bool, msgs ...any) {
 	t.Helper()
 	if !condition {
 		t.Fatalf("%s%s: false", trace(), message(msgs...))
 	}
 }
 
-func T(t *testing.T, got, wanted interface{}, msgs ...interface{}) {
+func equalsInterface(got, wanted reflect.Value) (bool, bool) {
+	if equals, ok := wanted.Type().MethodByName("Equals"); ok && equals.Type.NumIn() == 2 && equals.Type.NumOut() == 1 && equals.Type.In(0) == wanted.Type() && equals.Type.In(1) == got.Type() && equals.Type.Out(0).Kind() == reflect.Bool {
+		return equals.Func.Call([]reflect.Value{wanted, got})[0].Bool(), true
+	}
+	return false, false
+}
+
+func T(t *testing.T, got, wanted any, msgs ...any) {
 	t.Helper()
 	gotType := reflect.TypeOf(got)
 	wantedType := reflect.TypeOf(wanted)
@@ -122,14 +129,30 @@ func T(t *testing.T, got, wanted interface{}, msgs ...interface{}) {
 	}
 
 	if wantedType != nil {
-		if equals, ok := wantedType.MethodByName("Equals"); ok && equals.Type.NumIn() == 2 && equals.Type.NumOut() == 1 && equals.Type.In(0) == wantedType && equals.Type.In(1) == gotType && equals.Type.Out(0).Kind() == reflect.Bool && equals.Func.Call([]reflect.Value{reflect.ValueOf(wanted), reflect.ValueOf(got)})[0].Bool() {
+		gotValue := reflect.ValueOf(got)
+		wantedValue := reflect.ValueOf(wanted)
+		if equals, ok := equalsInterface(gotValue, wantedValue); ok && equals {
 			return
+		} else if wantedValue.Kind() == reflect.Slice {
+			if gotValue.Len() == wantedValue.Len() {
+				i := 0
+				for ; i < wantedValue.Len(); i++ {
+					if equals, ok := equalsInterface(gotValue.Index(i), wantedValue.Index(i)); !ok {
+						break
+					} else if !equals {
+						break
+					}
+				}
+				if i == wantedValue.Len() {
+					return
+				}
+			}
 		}
 	}
 	t.Fatalf("%s%s: %v != %v", trace(), message(msgs...), color(Red, got), color(Green, wanted))
 }
 
-func Bytes(t *testing.T, got, wanted []byte, msgs ...interface{}) {
+func Bytes(t *testing.T, got, wanted []byte, msgs ...any) {
 	t.Helper()
 	if !bytes.Equal(got, wanted) {
 		gotString := printable(string(got))
@@ -138,7 +161,7 @@ func Bytes(t *testing.T, got, wanted []byte, msgs ...interface{}) {
 	}
 }
 
-func String(t *testing.T, got, wanted string, msgs ...interface{}) {
+func String(t *testing.T, got, wanted string, msgs ...any) {
 	t.Helper()
 	if got != wanted {
 		gotString := printable(got)
@@ -147,14 +170,14 @@ func String(t *testing.T, got, wanted string, msgs ...interface{}) {
 	}
 }
 
-func Float(t *testing.T, got, wanted float64, msgs ...interface{}) {
+func Float(t *testing.T, got, wanted float64, msgs ...any) {
 	t.Helper()
 	if math.IsNaN(wanted) != math.IsNaN(got) || !math.IsNaN(wanted) && !floatEqual(got, wanted, Epsilon) {
 		t.Fatalf("%s%s: %v != %v", trace(), message(msgs...), color(Red, got), color(Green, wanted))
 	}
 }
 
-func Floats(t *testing.T, got, wanted []float64, msgs ...interface{}) {
+func Floats(t *testing.T, got, wanted []float64, msgs ...any) {
 	t.Helper()
 	equal := len(got) == len(wanted)
 	if equal {
@@ -170,14 +193,14 @@ func Floats(t *testing.T, got, wanted []float64, msgs ...interface{}) {
 	}
 }
 
-func FloatDiff(t *testing.T, got, wanted, epsilon float64, msgs ...interface{}) {
+func FloatDiff(t *testing.T, got, wanted, epsilon float64, msgs ...any) {
 	t.Helper()
 	if math.IsNaN(wanted) != math.IsNaN(got) || !math.IsNaN(wanted) && !floatEqual(got, wanted, epsilon) {
 		t.Fatalf("%s%s: %v != %v", trace(), message(msgs...), color(Red, got), color(Green, fmt.Sprintf("%v ± %v", wanted, epsilon)))
 	}
 }
 
-func Minify(t *testing.T, input string, err error, got, wanted string, msgs ...interface{}) {
+func Minify(t *testing.T, input string, err error, got, wanted string, msgs ...any) {
 	t.Helper()
 	inputString := printable(input)
 	if err != nil {
