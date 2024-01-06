@@ -46,20 +46,23 @@ func message(msgs ...any) string {
 }
 
 func printable(s string) string {
-	s = strings.Replace(s, "\n", `\n`, -1)
-	s = strings.Replace(s, "\r", `\r`, -1)
-	s = strings.Replace(s, "\t", `\t`, -1)
-	s = strings.Replace(s, "\x00", `\0`, -1)
-
 	s2 := ""
 	for _, r := range s {
 		if !unicode.IsPrint(r) {
-			if r <= 0xFF {
-				s2 += fmt.Sprintf("\\x%02X", r)
+			if r == '\n' {
+				s2 += fmt.Sprintf(Dark + "\\n" + UndoDark)
+			} else if r == '\r' {
+				s2 += fmt.Sprintf(Dark + "\\r" + UndoDark)
+			} else if r == '\t' {
+				s2 += fmt.Sprintf(Dark + "\\t" + UndoDark)
+			} else if r == 0 {
+				s2 += fmt.Sprintf(Dark + "\\0" + UndoDark)
+			} else if r <= 0xFF {
+				s2 += fmt.Sprintf(Dark+"\\x%02X"+UndoDark, r)
 			} else if r <= 0xFFFF {
-				s2 += fmt.Sprintf("\\u%04X", r)
+				s2 += fmt.Sprintf(Dark+"\\u%04X"+UndoDark, r)
 			} else {
-				s2 += fmt.Sprintf("\\U%08X", r)
+				s2 += fmt.Sprintf(Dark+"\\U%08X"+UndoDark, r)
 			}
 		} else {
 			s2 += string(r)
@@ -69,12 +72,15 @@ func printable(s string) string {
 }
 
 const (
-	Red   = "31"
-	Green = "32"
+	Red      = "\x1B[31m"
+	Green    = "\x1B[32m"
+	Dark     = "\x1B[2m"
+	UndoDark = "\x1B[22m"
+	Reset    = "\x1B[0m"
 )
 
 func color(color string, s any) string {
-	return fmt.Sprintf("\033[00;%sm%v\033[00m", color, s)
+	return fmt.Sprintf("%s%v%s", color, s, Reset)
 }
 
 func floatEqual(a, b, epsilon float64) bool {
