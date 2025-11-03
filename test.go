@@ -111,7 +111,7 @@ func Error(t *testing.T, err error, msgs ...any) {
 func That(t *testing.T, condition bool, msgs ...any) {
 	t.Helper()
 	if !condition {
-		t.Fatalf("%s%s: false", trace(), message(msgs...))
+		t.Fatalf("%s%s: %v", trace(), message(msgs...), color(Red, "false"))
 	}
 }
 
