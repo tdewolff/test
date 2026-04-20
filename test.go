@@ -84,14 +84,18 @@ func color(color string, s any) string {
 }
 
 func floatEqual(a, b, epsilon float64) bool {
-	// use mix of relative and absolute difference for large and small numbers respectively
-	// see: https://stackoverflow.com/a/32334103
-	if a == b {
-		return true
+	if epsilon < 1.0 {
+		// use mix of relative and absolute difference for large and small numbers respectively
+		// see: https://stackoverflow.com/a/32334103
+		if a == b {
+			return true
+		}
+		diff := math.Abs(a - b)
+		norm := math.Min(math.Abs(a)+math.Abs(b), math.MaxFloat64)
+		return diff < epsilon*math.Max(1.0, norm)
+	} else {
+		return math.Abs(a-b) < epsilon
 	}
-	diff := math.Abs(a - b)
-	norm := math.Min(math.Abs(a)+math.Abs(b), math.MaxFloat64)
-	return diff < epsilon*math.Max(1.0, norm)
 }
 
 /////////////////////////////////////////////////////////////////
@@ -199,10 +203,10 @@ func Floats(t *testing.T, got, wanted []float64, msgs ...any) {
 	}
 }
 
-func FloatDiff(t *testing.T, got, wanted, epsilon float64, msgs ...any) {
+func FloatDiff(t *testing.T, got, wanted, diff float64, msgs ...any) {
 	t.Helper()
-	if math.IsNaN(wanted) != math.IsNaN(got) || !math.IsNaN(wanted) && !floatEqual(got, wanted, epsilon) {
-		t.Fatalf("%s%s: %v != %v", trace(), message(msgs...), color(Red, got), color(Green, fmt.Sprintf("%v ± %v", wanted, epsilon)))
+	if math.IsNaN(wanted) != math.IsNaN(got) || !math.IsNaN(wanted) && !floatEqual(got, wanted, diff) {
+		t.Fatalf("%s%s: %v != %v", trace(), message(msgs...), color(Red, got), color(Green, fmt.Sprintf("%v ± %v", wanted, diff)))
 	}
 }
 
