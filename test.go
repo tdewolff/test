@@ -210,6 +210,22 @@ func FloatDiff(t *testing.T, got, wanted, diff float64, msgs ...any) {
 	}
 }
 
+func FloatsDiff(t *testing.T, got, wanted []float64, diff float64, msgs ...any) {
+	t.Helper()
+	equal := len(got) == len(wanted)
+	if equal {
+		for i := range got {
+			if math.IsNaN(wanted[i]) != math.IsNaN(got[i]) || !math.IsNaN(wanted[i]) && !floatEqual(got[i], wanted[i], diff) {
+				equal = false
+				break
+			}
+		}
+	}
+	if !equal {
+		t.Fatalf("%s%s: %v != %v", trace(), message(msgs...), color(Red, got), color(Green, fmt.Sprintf("%v ± %v", wanted, diff)))
+	}
+}
+
 func Minify(t *testing.T, input string, err error, got, wanted string, msgs ...any) {
 	t.Helper()
 	inputString := printable(input)
