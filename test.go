@@ -120,7 +120,9 @@ func That(t *testing.T, condition bool, msgs ...any) {
 }
 
 func equalsInterface(got, wanted reflect.Value) (bool, bool) {
-	if equals, ok := wanted.Type().MethodByName("Equals"); ok && equals.Type.NumIn() == 2 && equals.Type.NumOut() == 1 && equals.Type.In(0) == wanted.Type() && equals.Type.In(1) == got.Type() && equals.Type.Out(0).Kind() == reflect.Bool {
+	if equal, ok := wanted.Type().MethodByName("Equal"); ok && equal.Type.NumIn() == 2 && equal.Type.NumOut() == 1 && equal.Type.In(0) == wanted.Type() && equal.Type.In(1) == got.Type() && equal.Type.Out(0).Kind() == reflect.Bool {
+		return equal.Func.Call([]reflect.Value{wanted, got})[0].Bool(), true
+	} else if equals, ok := wanted.Type().MethodByName("Equals"); ok && equals.Type.NumIn() == 2 && equals.Type.NumOut() == 1 && equals.Type.In(0) == wanted.Type() && equals.Type.In(1) == got.Type() && equals.Type.Out(0).Kind() == reflect.Bool {
 		return equals.Func.Call([]reflect.Value{wanted, got})[0].Bool(), true
 	}
 	return false, false
